@@ -24,7 +24,8 @@ async function run() {
     try {
         await client.connect();
         const toolsCollection = client.db('tool-supplier').collection('user-info');
-        const reviewesCollection = client.db('vehicles').collection('types');
+        const reviewsCollection = client.db('vehicles').collection('types');
+        const usersCollection = client.db('tools-user').collection('product');
 
         // Getting tools
         app.get('/tools', async (req, res) => {
@@ -38,9 +39,18 @@ async function run() {
             const email = req.query;
             console.log(email);
             const query = {};
-            const cursor = reviewesCollection.find(query);
+            const cursor = reviewsCollection.find(query);
             const reviews = await cursor.toArray();
             res.send(reviews);
+        })
+        // Getting vehicles
+        app.get('/users', async (req, res) => {
+            const email = req.query;
+            console.log(email);
+            const query = {};
+            const cursor = usersCollection.find(query);
+            const users = await cursor.toArray();
+            res.send(users);
         })
 
         
@@ -72,12 +82,20 @@ async function run() {
             res.send(tool);
         })
 
+        // Post Tools
         app.post('/tools', async(req, res)=>{
             const newTool = req.body;
             const result = await toolsCollection.insertOne(newTool);
             res.send(result);
         })
 
+        // Post Users
+        app.post('/users', async(req, res)=>{
+            const newUser = req.body;
+            const result = await toolsCollection.insertOne(newUser);
+            res.send(result);
+        })
+// Post Reviews
         app.post('/reviews', async(req, res)=>{
             const newReview = req.body;
             const result = await toolsCollection.insertOne(newReview);
