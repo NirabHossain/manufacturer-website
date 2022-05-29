@@ -26,6 +26,7 @@ async function run() {
         const toolsCollection = client.db('tool-supplier').collection('user-info');
         const reviewsCollection = client.db('vehicles').collection('types');
         const usersCollection = client.db('tools-user').collection('product');
+        const cartsCollection = client.db('tools-user').collection('cart-product');
 
         // Getting tools
         app.get('/tools', async (req, res) => {
@@ -95,6 +96,14 @@ async function run() {
             const result = await toolsCollection.insertOne(newUser);
             res.send(result);
         })
+        
+        // Post User's product
+        app.post('/products', async(req, res)=>{
+            const newUserProduct = req.body;
+            const result = await toolsCollection.insertOne(newUserProduct);
+            res.send(result);
+        })
+
 // Post Reviews
         app.post('/reviews', async(req, res)=>{
             const newReview = req.body;
