@@ -24,7 +24,7 @@ async function run() {
     try {
         await client.connect();
         const toolsCollection = client.db('tool-supplier').collection('user-info');
-        // const vehiclesCollection = client.db('vehicles').collection('types');
+        const reviewesCollection = client.db('vehicles').collection('types');
 
         // Getting tools
         app.get('/tools', async (req, res) => {
@@ -34,14 +34,14 @@ async function run() {
             res.send(tools);
         })
         // Getting vehicles
-        // app.get('/vehicles', async (req, res) => {
-        //     const email = req.query;
-        //     console.log(email);
-        //     const query = {};
-        //     const cursor = vehiclesCollection.find(query);
-        //     const vehicles = await cursor.toArray();
-        //     res.send(vehicles);
-        // })
+        app.get('/reviews', async (req, res) => {
+            const email = req.query;
+            console.log(email);
+            const query = {};
+            const cursor = reviewesCollection.find(query);
+            const reviews = await cursor.toArray();
+            res.send(reviews);
+        })
 
         
         // Update bike users
@@ -56,7 +56,7 @@ async function run() {
             const result =await toolsCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         })
-
+        
         app.get('/tools/:id', async (req, res) => {
             const id = req.params.id;
             const query = {_id:ObjectId(id)};
@@ -75,6 +75,12 @@ async function run() {
         app.post('/tools', async(req, res)=>{
             const newTool = req.body;
             const result = await toolsCollection.insertOne(newTool);
+            res.send(result);
+        })
+
+        app.post('/reviews', async(req, res)=>{
+            const newReview = req.body;
+            const result = await toolsCollection.insertOne(newReview);
             res.send(result);
         })
 
