@@ -33,18 +33,7 @@ async function run() {
             const tools = await cursor.toArray();
             res.send(tools);
         })
-        // Getting vehicles
-        // app.get('/vehicles', async (req, res) => {
-        //     const email = req.query;
-        //     console.log(email);
-        //     const query = {};
-        //     const cursor = vehiclesCollection.find(query);
-        //     const vehicles = await cursor.toArray();
-        //     res.send(vehicles);
-        // })
 
-        
-        // Update bike users
         app.put('/tools/:id', async(req, res)=>{
             const id = req.params.id;
             const updatedTool = req.body;
