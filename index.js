@@ -109,8 +109,15 @@ async function run() {
         // Post User's product from the purchase
         app.post('/products', async(req, res)=>{
             const newUserProduct = req.body;
+
+            const query={cartId: newUserProduct.cartId, email: newUserProduct.email};
+            console.log(email);
+            const exists = await cartsCollection.findOne(query);
+            console.log(exists);
+            if(exists) return res.send({success: false, newUserProduct: exists});
+
             const result = await cartsCollection.insertOne(newUserProduct);
-            res.send(result);
+            res.send({success: true, result});
         })
 
 // Post Reviews
