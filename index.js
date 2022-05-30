@@ -131,9 +131,9 @@ async function run() {
             const filter = {email: email};
             const options = {upsert: true};
             const updatedDoc = {
-                $set: updatedUser
+                $set: updatedUser,
             };
-            const result =await toolsCollection.updateOne(filter, updatedDoc, options);
+            const result =await usersCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         })
         
