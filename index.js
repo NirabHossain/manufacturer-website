@@ -28,6 +28,7 @@ async function run() {
         const usersCollection = client.db('tools-user').collection('product');
         const cartsCollection = client.db('user-interest').collection('added-product');
 
+
         // Getting tools
         app.get('/tools', async (req, res) => {
             const query = {};
@@ -35,48 +36,6 @@ async function run() {
             const tools = await cursor.toArray();
             res.send(tools);
         })
-        // Getting review
-        app.get('/reviews', async (req, res) => {
-            const email = req.query;
-            console.log(email);
-            const query = {};
-            const cursor = reviewsCollection.find(query);
-            const reviews = await cursor.toArray();
-            res.send(reviews);
-        })
-        // Getting users
-        app.get('/users', async (req, res) => {
-            const email = req.query;
-            console.log(email);
-            const query = {};
-            const cursor = usersCollection.find(query);
-            const users = await cursor.toArray();
-            res.send(users);
-        })
-        // Getting user Interested products
-        app.get('/products', async (req, res) => {
-            const email = req.query;
-            console.log(email);
-            const query = {};
-            const cursor = cartsCollection.find(query);
-            const cartProducts = await cursor.toArray();
-            res.send(cartProducts);
-        })
-
-        
-        // Update bike users
-        app.put('/tools/:id', async(req, res)=>{
-            const id = req.params.id;
-            const updatedTool = req.body;
-            const filter = {_id:ObjectId(id)};
-            const options = {upsert: true};
-            const updatedDoc = {
-                $set:{quantity: updatedTool.quantity}
-            };
-            const result =await toolsCollection.updateOne(filter, updatedDoc, options);
-            res.send(result);
-        })
-        
         app.get('/tools/:id', async (req, res) => {
             const id = req.params.id;
             const query = {_id:ObjectId(id)};
@@ -98,15 +57,35 @@ async function run() {
             const result = await toolsCollection.insertOne(newTool);
             res.send(result);
         })
-
-        // Post Users
-        app.post('/users', async(req, res)=>{
-            const newUser = req.body;
-            const result = await usersCollection.insertOne(newUser);
+        // Update tools
+        app.put('/tools/:id', async(req, res)=>{
+            const id = req.params.id;
+            const updatedTool = req.body;
+            const filter = {_id:ObjectId(id)};
+            const options = {upsert: true};
+            const updatedDoc = {
+                $set:{quantity: updatedTool.quantity}
+            };
+            const result =await toolsCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         })
         
-        // Post User's product from the purchase
+
+
+
+        
+
+
+        // Getting user Interested products
+        app.get('/products', async (req, res) => {
+            const email = req.query.email;
+            console.log(email);
+            const query = {email: email};
+            const cursor = cartsCollection.find(query);
+            const cartProducts = await cursor.toArray();
+            res.send(cartProducts);
+        })
+        // Post User's Orders from the purchase
         app.post('/products', async(req, res)=>{
             const newUserProduct = req.body;
 
@@ -119,11 +98,56 @@ async function run() {
             res.send({success: true, result});
         })
 
-// Post Reviews
+        
+
+
+
+
+
+
+
+
+        // Getting a user profile with particular email
+        app.get('/users', async (req, res) => {
+            const email = req.query.email;
+            console.log(email);
+            const query = {email: email};
+            const cursor = usersCollection.find(query);
+            const users = await cursor.toArray();
+            res.send(users);
+        })
+        // Post Users
+        app.post('/users', async(req, res)=>{
+            const newUser = req.body;
+            const result = await usersCollection.insertOne(newUser);
+            res.send(result);
+        })
+
+
+
+
+
+
+
+
+
+
+        // Post Reviews
         app.post('/reviews', async(req, res)=>{
             const newReview = req.body;
             const result = await reviewsCollection.insertOne(newReview);
             res.send(result);
+        })
+
+
+        // Getting review
+        app.get('/reviews', async (req, res) => {
+            const email = req.query;
+            console.log(email);
+            const query = {};
+            const cursor = reviewsCollection.find(query);
+            const reviews = await cursor.toArray();
+            res.send(reviews);
         })
 
     }
