@@ -109,6 +109,14 @@ async function run() {
 
 
 
+        // Getting all users
+        app.get('/users', async (req, res) => {
+            const query = {};
+            const cursor = usersCollection.find(query);
+            const users = await cursor.toArray();
+            res.send(users);
+        })
+        
         // Getting a user profile with particular email
         app.get('/users', async (req, res) => {
             const email = req.query.email;
@@ -118,6 +126,7 @@ async function run() {
             const users = await cursor.toArray();
             res.send(users);
         })
+
         // Post Users
         app.post('/users', async(req, res)=>{
             const newUser = req.body;
