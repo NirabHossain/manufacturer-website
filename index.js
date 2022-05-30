@@ -167,11 +167,8 @@ async function run() {
         })
         
 
-        app.put('/users/admin/:email',verifyJWT, async(req, res)=>{
+        app.put('/users/admin/:email', async(req, res)=>{
             const email = req.params.email;
-            const requestor = req.decoded.mail;
-            const requestedAccount = await usersCollection.findOne({email:requestor});
-            // if(requestedAccount.role==='admin'){}
 
             const filter = {email: email};
             const updatedDoc = {
