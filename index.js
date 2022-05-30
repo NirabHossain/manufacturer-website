@@ -73,7 +73,7 @@ async function run() {
 
 
 
-        
+
 
 
         // Getting user Interested products
@@ -97,6 +97,8 @@ async function run() {
             const result = await cartsCollection.insertOne(newUserProduct);
             res.send({success: true, result});
         })
+
+
 
         
 
@@ -122,6 +124,19 @@ async function run() {
             const result = await usersCollection.insertOne(newUser);
             res.send(result);
         })
+        // Update User
+        app.put('/users/:email', async(req, res)=>{
+            const email = req.params.email;
+            const updatedUser = req.body;
+            const filter = {email: email};
+            const options = {upsert: true};
+            const updatedDoc = {
+                $set: updatedUser
+            };
+            const result =await toolsCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+        
 
 
 
