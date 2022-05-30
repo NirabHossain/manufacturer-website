@@ -13,6 +13,20 @@ app.use(cors());
 app.use(express.json());
 
 
+const verifyJWT = (req, res, next) =>{
+    const authHeader = req.headers.authorization;
+    if(!authHeader){
+        return res.status(401).send({message : 'Unauthorized access'});
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded) {
+        if(err)return res.status(403).send({message:"Forbidden Access"});
+        console.log(decoded.foo) // bar
+      })
+      req.decoded = decoded;
+      next();
+}
+
 // APIs
 
 
@@ -118,13 +132,18 @@ async function run() {
         })
         
         // Getting a user profile with particular email
-        app.get('/users', async (req, res) => {
+        app.get('/users', verifyJWT, async (req, res) => {
             const email = req.query.email;
-            console.log(email);
-            const query = {email: email};
-            const cursor = usersCollection.find(query);
-            const users = await cursor.toArray();
-            res.send(users);
+            const authorization = req.headers.authorization;
+
+            const decodedEmail = req.decoded.email;
+            if(decodedEmail===email){
+                const query = {email: email};
+                const cursor = usersCollection.find(query);
+                const users = await cursor.toArray();
+                res.send(users);    
+            }
+            else  res.status(403).send({message:"Forbidden Access"});
         })
 
         // Post Users
