@@ -97,7 +97,7 @@ async function run() {
             res.send(result);
         })
         
-        // Post User's product
+        // Post User's product from the purchase
         app.post('/products', async(req, res)=>{
             const newUserProduct = req.body;
             const result = await cartsCollection.insertOne(newUserProduct);
