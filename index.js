@@ -93,21 +93,21 @@ async function run() {
         // Post Users
         app.post('/users', async(req, res)=>{
             const newUser = req.body;
-            const result = await toolsCollection.insertOne(newUser);
+            const result = await usersCollection.insertOne(newUser);
             res.send(result);
         })
         
         // Post User's product
         app.post('/products', async(req, res)=>{
             const newUserProduct = req.body;
-            const result = await toolsCollection.insertOne(newUserProduct);
+            const result = await cartsCollection.insertOne(newUserProduct);
             res.send(result);
         })
 
 // Post Reviews
         app.post('/reviews', async(req, res)=>{
             const newReview = req.body;
-            const result = await toolsCollection.insertOne(newReview);
+            const result = await reviewsCollection.insertOne(newReview);
             res.send(result);
         })
 
