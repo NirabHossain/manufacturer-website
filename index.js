@@ -124,7 +124,7 @@ async function run() {
 
 
         // Getting all users
-        app.get('/users', verifyJWT, async (req, res) => {
+        app.get('/users', async (req, res) => {
             const query = {};
             const cursor = usersCollection.find(query);
             const users = await cursor.toArray();
