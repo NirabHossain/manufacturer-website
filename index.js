@@ -26,7 +26,7 @@ async function run() {
         const toolsCollection = client.db('tool-supplier').collection('user-info');
         const reviewsCollection = client.db('vehicles').collection('types');
         const usersCollection = client.db('tools-user').collection('product');
-        const cartsCollection = client.db('tools-user').collection('cart-product');
+        const cartsCollection = client.db('user-interest').collection('added-product');
 
         // Getting tools
         app.get('/tools', async (req, res) => {
@@ -35,7 +35,7 @@ async function run() {
             const tools = await cursor.toArray();
             res.send(tools);
         })
-        // Getting vehicles
+        // Getting review
         app.get('/reviews', async (req, res) => {
             const email = req.query;
             console.log(email);
@@ -44,7 +44,7 @@ async function run() {
             const reviews = await cursor.toArray();
             res.send(reviews);
         })
-        // Getting vehicles
+        // Getting users
         app.get('/users', async (req, res) => {
             const email = req.query;
             console.log(email);
@@ -52,6 +52,15 @@ async function run() {
             const cursor = usersCollection.find(query);
             const users = await cursor.toArray();
             res.send(users);
+        })
+        // Getting user Interested products
+        app.get('/products', async (req, res) => {
+            const email = req.query;
+            console.log(email);
+            const query = {};
+            const cursor = cartsCollection.find(query);
+            const cartProducts = await cursor.toArray();
+            res.send(cartProducts);
         })
 
         
