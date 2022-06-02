@@ -13,18 +13,19 @@ app.use(cors());
 app.use(express.json());
 
 
-const verifyJWT = (req, res, next) =>{
+const verifyJWT = (req, res, next) => {
     const authHeader = req.headers.authorization;
-    if(!authHeader){
-        return res.status(401).send({message : 'Unauthorized access'});
+    console.log(authHeader);
+    if (!authHeader) {
+        return res.status(401).send({ message: 'Unauthorized access' });
     }
     const token = authHeader.split(' ')[1];
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded) {
-        if(err)return res.status(403).send({message:"Forbidden Access"});
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) return res.status(403).send({ message: "Forbidden Access" });
         console.log(decoded.foo) // bar
-      })
-      req.decoded = decoded;
-      next();
+    })
+    req.decoded = decoded;
+    next();
 }
 
 // APIs
@@ -42,161 +43,175 @@ async function run() {
         const usersCollection = client.db('tools-user').collection('product');
         const cartsCollection = client.db('user-interest').collection('added-product');
 
-
+        // *************************************        
         // Getting tools
+        // *************************************
         app.get('/tools', async (req, res) => {
             const query = {};
             const cursor = toolsCollection.find(query);
             const tools = await cursor.toArray();
             res.send(tools);
         })
+
+        // Find a tool by its ID
         app.get('/tools/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id:ObjectId(id)};
+            const query = { _id: ObjectId(id) };
             const tool = await toolsCollection.findOne(query);
             res.send(tool);
 
         })
-        
+
+        // Delete a tool
         app.delete('/tools/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id:ObjectId(id)};
+            const query = { _id: ObjectId(id) };
             const tool = await toolsCollection.deleteOne(query);
             res.send(tool);
         })
 
         // Post Tools
-        app.post('/tools', async(req, res)=>{
+        app.post('/tools', async (req, res) => {
             const newTool = req.body;
             const result = await toolsCollection.insertOne(newTool);
             res.send(result);
         })
-        // Update tools
-        app.put('/tools/:id', async(req, res)=>{
+
+        // Update tool quantity
+        app.put('/tools/:id', async (req, res) => {
             const id = req.params.id;
             const updatedTool = req.body;
-            const filter = {_id:ObjectId(id)};
-            const options = {upsert: true};
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
             const updatedDoc = {
-                $set:{quantity: updatedTool.quantity}
+                $set: { quantity: updatedTool.quantity }
             };
-            const result =await toolsCollection.updateOne(filter, updatedDoc, options);
+            const result = await toolsCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         })
-        
 
 
 
 
 
 
-        // Getting user Interested products
+        // *************************************
+        // Orders
+        // *************************************
+
+        // Admin: Getting all interested products
+
+        // User: Getting user Interested products with specific email id
         app.get('/products', async (req, res) => {
             const email = req.query.email;
-            console.log(email);
-            const query = {email: email};
+            let query ={};
+            if(email) query = { email: email };
             const cursor = cartsCollection.find(query);
             const cartProducts = await cursor.toArray();
             res.send(cartProducts);
         })
-        // Post User's Orders from the purchase
-        app.post('/products', async(req, res)=>{
+
+        // User: Post User's Orders from the purchase
+        app.post('/products', async (req, res) => {
             const newUserProduct = req.body;
 
-            const query={cartId: newUserProduct.cartId, email: newUserProduct.email};
+            const query = { cartId: newUserProduct.cartId, email: newUserProduct.email };
             const exists = await cartsCollection.findOne(query);
             console.log(exists);
-            if(exists) return res.send({success: false, newUserProduct: exists});
+            if (exists) return res.send({ success: false, newUserProduct: exists });
 
             const result = await cartsCollection.insertOne(newUserProduct);
-            res.send({success: true, result});
+            res.send({ success: true, result });
         })
 
 
-
-        
-
-
-
-
-
-
-
-
+  
+        // *************************************
+        // Users *******************************************
+        // *************************************
+        // Getting a user profile with particular email
         // Getting all users
+ 
         app.get('/users', async (req, res) => {
-            const query = {};
+            let query = {};
+            const email = req.query.email;
+            if(email)query = { email: email };
             const cursor = usersCollection.find(query);
             const users = await cursor.toArray();
             res.send(users);
         })
-        
-        // Getting a user profile with particular email
-        app.get('/users', verifyJWT, async (req, res) => {
-            const email = req.query.email;
-            const authorization = req.headers.authorization;
 
-            const decodedEmail = req.decoded.email;
-            if(decodedEmail===email){
-                const query = {email: email};
-                const cursor = usersCollection.find(query);
-                const users = await cursor.toArray();
-                res.send(users);    
-            }
-            else  res.status(403).send({message:"Forbidden Access"});
-        })
 
         // Post Users
-        app.post('/users', async(req, res)=>{
+        app.post('/users', async (req, res) => {
             const newUser = req.body;
             const result = await usersCollection.insertOne(newUser);
             res.send(result);
         })
+
         // Update User
-        app.put('/users/:email', async(req, res)=>{
+        app.put('/users/:email', async (req, res) => {
             const email = req.params.email;
             const updatedUser = req.body;
-            const filter = {email: email};
-            const options = {upsert: true};
+            const filter = { email: email };
+            const options = { upsert: true };
             const updatedDoc = {
                 $set: updatedUser,
             };
-            const result =await usersCollection.updateOne(filter, updatedDoc, options);
-            const token = jwt.sign({email: email}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '2h'})
-            res.send({result, token});
+            const result = await usersCollection.updateOne(filter, updatedDoc, options);
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '2h' })
+            res.send({ result, token });
         })
-        
 
-        app.put('/users/admin/:email', async(req, res)=>{
+
+
+
+
+        // *************************************
+        // Admin: Updating user admin role
+        // *************************************
+
+        // Get all the admins with admin query
+        app.get('/admins', async (req, res) => {
+            const email=req.query.email;
+            let query={};
+            if(email)query = { email: email,role: 'admin' };
+            const cursor = usersCollection.find(query);
+            const admins = await cursor.toArray();
+            res.send(admins);
+        })
+
+
+
+        app.put('/admins/:email', async (req, res) => {
             const email = req.params.email;
 
-            const filter = {email: email};
+            const filter = { email: email };
             const updatedDoc = {
-                $set: {role: 'admin'},
+                $set: { role: 'admin' },
             };
-            const result =await usersCollection.updateOne(filter, updatedDoc);
+            const result = await usersCollection.updateOne(filter, updatedDoc);
             res.send(result);
         })
-        
 
 
 
 
 
-
-
-
+        // *************************************
+        //  Reviews
+        // *************************************
 
 
         // Post Reviews
-        app.post('/reviews', async(req, res)=>{
+        app.post('/reviews', async (req, res) => {
             const newReview = req.body;
             const result = await reviewsCollection.insertOne(newReview);
             res.send(result);
         })
 
 
-        // Getting review
+        // Getting all reviews
         app.get('/reviews', async (req, res) => {
             const email = req.query;
             console.log(email);
@@ -214,7 +229,7 @@ async function run() {
 run().catch(console.dir);
 
 
-app.get('/', (req, res)=>{
+app.get('/', (req, res) => {
     res.send("Root folder is working");
 })
 
