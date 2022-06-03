@@ -243,8 +243,14 @@ async function run() {
         // Post Reviews
         app.post('/reviews', async (req, res) => {
             const newReview = req.body;
+
+            const query = {email: newReview.email };
+            const exists = await reviewsCollection.findOne(query);
+            if (exists) return res.send({ success: false, newUserProduct: exists });
+
             const result = await reviewsCollection.insertOne(newReview);
-            res.send(result);
+            res.send({ success: true, result });
+
         })
 
 
