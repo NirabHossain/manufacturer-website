@@ -15,7 +15,6 @@ app.use(express.json());
 
 const verifyJWT = (req, res, next) => {
     const authHeader = req.headers.authorization;
-    console.log(authHeader);
     if (!authHeader) {
         return res.status(401).send({ message: 'Unauthorized access' });
     }
@@ -73,8 +72,13 @@ async function run() {
         // Post Tools
         app.post('/tools', async (req, res) => {
             const newTool = req.body;
+            
+            const query = { name: newTool.name };
+            const exists = await toolsCollection.findOne(query);
+            if(exists) return res.send({ success: false, newTool: exists });
+
             const result = await toolsCollection.insertOne(newTool);
-            res.send(result);
+            res.send({ success: true, result });
         })
 
         // Update tool quantity
@@ -101,7 +105,17 @@ async function run() {
 
         // Admin: Getting all interested products
 
-        // User: Getting user Interested products with specific email id
+        // User: Getting user Interested products with specific email id query
+        app.get('/products', async (req, res) => {
+            const email = req.query.email;
+            let query ={};
+            if(email) query = { email: email };
+            const cursor = cartsCollection.find(query);
+            const cartProducts = await cursor.toArray();
+            res.send(cartProducts);
+        })
+
+        // Product with id
         app.get('/products', async (req, res) => {
             const email = req.query.email;
             let query ={};
@@ -117,12 +131,34 @@ async function run() {
 
             const query = { cartId: newUserProduct.cartId, email: newUserProduct.email };
             const exists = await cartsCollection.findOne(query);
-            console.log(exists);
             if (exists) return res.send({ success: false, newUserProduct: exists });
 
             const result = await cartsCollection.insertOne(newUserProduct);
             res.send({ success: true, result });
         })
+
+        // Update Product Status
+        app.put('/products/:_id', async (req, res) => {
+            const _id = req.params._id;
+            const updatedProduct = req.body;
+            const filter = {  _id: ObjectId(_id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: updatedProduct,
+            };
+            const result = await cartsCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+
+        // Cancel/Delete Product 
+        app.delete('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const product = await cartsCollection.deleteOne(query);
+            res.send(product);
+        })
+
+
 
 
   
@@ -162,6 +198,7 @@ async function run() {
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '2h' })
             res.send({ result, token });
         })
+
 
 
 
@@ -214,7 +251,6 @@ async function run() {
         // Getting all reviews
         app.get('/reviews', async (req, res) => {
             const email = req.query;
-            console.log(email);
             const query = {};
             const cursor = reviewsCollection.find(query);
             const reviews = await cursor.toArray();
